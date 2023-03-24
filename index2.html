@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Document</title>
+        <style>
+            #btn-submit {
+                background-color: rgb(77, 135, 244);
+                color: #fff;
+                border: none;
+                padding: 5px;
+            }
+
+            #btn-submit:hover {
+                color: #fff;
+                background-color: rgb(4, 88, 245);
+                transition: 0.3s;
+            }
+
+            .clear-tasks {
+                background-color: #333;
+                color: #fff;
+                border: none;
+                padding: 10px;
+            }
+
+            .clear-tasks:hover {
+                background-color: #ccc;
+                color: black;
+                transition: 0.3s;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="form-content">
+                <span class="form-title">Task List</span>
+                <form id="task-form">
+                    <input type="text" name="task" id="task">
+                    <input type="submit" value="Submit" class="btn" id="btn-submit">
+                </form>
+
+                <div class="form-action">
+                    <h5 id="form-title">Tasks</h5>
+                    <input type="text" name="filter" id="filter">
+                    
+                    <ul class="collection"></ul>
+                    <button class="clear-tasks">Clear Tasks</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            const form = document.querySelector('#task-form');
+            const taskList = document.querySelector('.collection');
+            const clearBtn = document.querySelector('.clear-tasks');
+            const filter = document.querySelector('#filter');
+            const taskInput = document.querySelector('#task');
+
+            loadEventListeners();
+
+            function loadEventListeners() {
+                form.addEventListener('submit', addTask);
+                taskList.addEventListener('click', removeTask);
+                clearBtn.addEventListener('click', clearTasks);
+                filter.addEventListener('keyup', filterTasks);
+            }
+
+            function addTask(e) {
+                if(taskInput.value === '') {
+                    alert('task field empty, please add a task');
+                }
+
+                const li = document.createElement('li');
+                li.className = 'collection-item';
+                li.appendChild(document.createTextNode(taskInput.value));
+
+                const link = document.createElement('a');
+                link.className = 'delete-item';
+                link.innerHTML = '<i class="fa fa-remove"></i>';
+
+                li.appendChild(link);
+                taskList.appendChild(li);
+
+                storeTaskInLocalStorage(taskInput.value);
+
+                taskInput.value = '';
+                console.log(li);
+
+                e.preventDefault();
+            }
+
+            function storeTaskInLocalStorage(task) {
+                let tasks;
+
+                if(localStorage.getItem('tasks') === null) {
+                    tasks = [];
+                } else {
+                    tasks = JSON.parse(localStorage.getItem('tasks'));
+                }
+
+                tasks.push(task);
+
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+
+            function removeTask(e) {
+                if(e.target.parentElement.classList.contains('delete-item')) {
+                    if(confirm('Are You Sure?')) {
+                        e.target.parentElement.parentElement.remove();
+                    }
+                }
+
+                e.preventDefault();
+            }
+
+            function removeFromLocalStorage(taskItem) {
+                let tasks;
+
+                if(localStorage.getItem('tasks') === null) {
+                    tasks = [];
+                } else {
+                    tasks = JSON.parse(localStorage.getItem('tasks'));
+                }
+
+                tasks.forEach((task, index) => {
+                    if(taskItem.textContent === task) {
+                        tasks.splice(index, 1);
+                    }
+                });
+
+                localStorage.getItem('tasks', JSON.stringify(tasks));
+            }
+
+            function clearTasks(e) {
+                if(taskList.firstChild) {
+                    if(confirm('Are You Sure?')) {
+                        taskList.removeChild(taskList.firstChild);
+                    }
+                }
+
+                clearTasksFromLocalStorage();
+            }
+
+            function clearTasksFromLocalStorage() {
+                alert('all tasks cleared');
+                localStorage.clear();
+            }
+
+            function filterTasks(e) {
+                const text = e.target.value.toLowerCase();
+
+                document.querySelectorAll('.collection-item').forEach((task) => {
+                    const item = task.firstChild.textContent;
+
+                    if(item.toLowerCase().indexOf(text) != -1) {
+                        task.style.display = 'block';
+                    } else {
+                        task.style.display = 'none';
+                    }
+                });
+            }
+
+            function getTasks() {
+                let tasks;
+
+                if(localStorage.getItem('tasks') === null) {
+                    tasks = [];
+                } else {
+                    tasks = JSON.parse(localStorage.getItem('tasks'));
+                }
+
+                tasks.forEach((task) => {
+                    const li = document.createElement('li');
+                    li.className = 'collection-item';
+                    li.appendChild(document.createTextNode(task));
+                    
+                    const link = document.createElement('a');
+                    link.className = 'delete-item secondary-content';
+                    link.innerHTML = '<i class="fa fa-remove></i>';
+                    li.appendChild(link);
+                    taskList.appendChild(li);
+                });
+            }
+        </script>
+    </body>
+</html>
